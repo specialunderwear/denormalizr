@@ -49,9 +49,12 @@ function denormalizeDictionary(items, entities, schema, bag) {
   const keyName = schema.getDictionaryStoredKeyName();
 
   return items.reduce((result, item) => {
-      const normalItem = 
-      const {key, ...obj} = denormalize(item, entities, itemSchema, bag);
-      result[key] = obj;
+      const denormalizedItem = denormalize(item, entities, itemSchema, bag);
+      const key = denormalizedItem[keyName];
+      delete denormalizedItem[keyName];
+
+      result[key] = denormalizedItem;
+      return result;
   }, {});
 }
 
