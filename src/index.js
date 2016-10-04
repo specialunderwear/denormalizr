@@ -1,3 +1,4 @@
+import DictionarySchema from 'normalizr/lib/DictionarySchema';
 import IterableSchema from 'normalizr/lib/IterableSchema';
 import EntitySchema from 'normalizr/lib/EntitySchema';
 import UnionSchema from 'normalizr/lib/UnionSchema';
@@ -43,6 +44,17 @@ function denormalizeIterable(items, entities, schema, bag) {
   return items.map(o => denormalize(o, entities, itemSchema, bag));
 }
 
+function denormalizeDictionary(items, entities, schema, bag) {
+  const itemSchema = schema.getItemSchema();
+  const keyName = schema.getDictionaryStoredKeyName();
+
+  return items.reduce((result, item) => {
+      const normalItem = 
+      const {key, ...obj} = denormalize(item, entities, itemSchema, bag);
+      result[key] = obj;
+  }, {});
+}
+
 /**
  * @param   {object|Immutable.Map|number|string} entity
  * @param   {object|Immutable.Map} entities
@@ -77,7 +89,6 @@ function denormalizeObject(obj, entities, schema, bag) {
   let denormalized = obj
 
   Object.keys(schema)
-    .filter(attribute => attribute.substring(0, 1) !== '_')
     .filter(attribute => typeof getIn(obj, [attribute]) !== 'undefined')
     .forEach(attribute => {
 
@@ -142,6 +153,8 @@ export function denormalize(obj, entities, schema, bag = {}) {
 
   if (schema instanceof EntitySchema) {
     return denormalizeEntity(obj, entities, schema, bag);
+  } else if (schema instanceof DictionarySchema) {
+    return denormalizeDictionary(obj, entities, schema, bag);
   } else if (schema instanceof IterableSchema) {
     return denormalizeIterable(obj, entities, schema, bag);
   } else if (schema instanceof UnionSchema) {
