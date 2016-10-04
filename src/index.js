@@ -45,15 +45,15 @@ function denormalizeIterable(items, entities, schema, bag) {
 }
 
 function denormalizeDictionary(items, entities, schema, bag) {
-  const itemSchema = schema.getItemSchema();
   const keyName = schema.getDictionaryStoredKeyName();
 
-  return items.reduce((result, item) => {
-      const denormalizedItem = denormalize(item, entities, itemSchema, bag);
-      const key = denormalizedItem[keyName];
-      delete denormalizedItem[keyName];
+  const denormalizedItems = denormalizeIterable(items, entities, schema, bag);
 
-      result[key] = denormalizedItem;
+  return denormalizedItems.reduce((result, item) => {
+      const key = item[keyName];
+      delete item[keyName];
+
+      result[key] = item;
       return result;
   }, {});
 }
