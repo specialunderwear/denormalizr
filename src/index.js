@@ -1,4 +1,4 @@
-import KeyedObjectSchema from 'normalizr/lib/DictionarySchema';
+import KeyedObjectSchema from 'normalizr/lib/KeyedObjectSchema';
 import IterableSchema from 'normalizr/lib/IterableSchema';
 import EntitySchema from 'normalizr/lib/EntitySchema';
 import UnionSchema from 'normalizr/lib/UnionSchema';
@@ -45,7 +45,7 @@ function denormalizeIterable(items, entities, schema, bag) {
 }
 
 function denormalizeKeyedObject(items, entities, schema, bag) {
-  const keyName = schema.getDictionaryStoredKeyName();
+  const keyName = schema.getKeyedObjectStoredKeyName();
 
   if (isObject(items)) {
       const itemSchema = schema.getItemSchema();
