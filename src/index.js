@@ -1,4 +1,4 @@
-import DictionarySchema from 'normalizr/lib/DictionarySchema';
+import KeyedObjectSchema from 'normalizr/lib/DictionarySchema';
 import IterableSchema from 'normalizr/lib/IterableSchema';
 import EntitySchema from 'normalizr/lib/EntitySchema';
 import UnionSchema from 'normalizr/lib/UnionSchema';
@@ -44,18 +44,29 @@ function denormalizeIterable(items, entities, schema, bag) {
   return items.map(o => denormalize(o, entities, itemSchema, bag));
 }
 
-function denormalizeDictionary(items, entities, schema, bag) {
+function denormalizeKeyedObject(items, entities, schema, bag) {
   const keyName = schema.getDictionaryStoredKeyName();
 
-  const denormalizedItems = denormalizeIterable(items, entities, schema, bag);
+  if (isObject(items)) {
+      const itemSchema = schema.getItemSchema();
+      return Object.keys(items).reduce((result, key) => {
+          const item = denormalize(items[key], entities, itemSchema, bag)
+          delete item[keyName];
 
-  return denormalizedItems.reduce((result, item) => {
-      const key = item[keyName];
-      delete item[keyName];
+          result[key] = item;
+          return result;
+      }, {})
+  } else {
+      const denormalizedItems = denormalizeIterable(items, entities, schema, bag);
 
-      result[key] = item;
-      return result;
-  }, {});
+      return denormalizedItems.reduce((result, item) => {
+          const key = item[keyName];
+          delete item[keyName];
+
+          result[key] = item;
+          return result;
+      }, {});
+  }
 }
 
 /**
@@ -156,8 +167,8 @@ export function denormalize(obj, entities, schema, bag = {}) {
 
   if (schema instanceof EntitySchema) {
     return denormalizeEntity(obj, entities, schema, bag);
-  } else if (schema instanceof DictionarySchema) {
-    return denormalizeDictionary(obj, entities, schema, bag);
+  } else if (schema instanceof KeyedObjectSchema) {
+    return denormalizeKeyedObject(obj, entities, schema, bag);
   } else if (schema instanceof IterableSchema) {
     return denormalizeIterable(obj, entities, schema, bag);
   } else if (schema instanceof UnionSchema) {
